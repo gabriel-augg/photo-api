@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { User } from '../models/user.model';
 import { errorHandler } from '../utils/error';
 import bcryptjs from 'bcryptjs';
-import { createExpirationDate, createToken } from '../utils';
+import { createExpirationDate, createToken, createPassword, createUsername } from '../utils';
 
 export const signUp = async (req: Request, res: Response, next: NextFunction) => {
     const { name, username, avatarUrl, email, password, confirmPassword } = req.body;
@@ -68,6 +68,53 @@ export const signIn = async (req: Request, res: Response, next: NextFunction) =>
         res.cookie('access_token', token, { httpOnly: true, expires: expiryDate })
             .status(200)
             .json({ ...userWithoutPassword });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const google = async (req: Request, res: Response, next: NextFunction) => {
+    const { name, email, avatarUrl } = req.body;
+
+    if (!name || !email) {
+        return next(errorHandler(422, "it was not possible to login with Google's account"));
+    }
+
+    try {
+        const user = await User.findOne({ email });
+
+        if (user) {
+            const token = createToken(user._id.toString());
+            const expiryDate = createExpirationDate();
+
+            const { password: _, ...userWithoutPassword } = user.toObject();
+
+            res.cookie('access_token', token, { httpOnly: true, expires: expiryDate })
+                .status(200)
+                .json({ ...userWithoutPassword });
+        } else {
+            const password = createPassword();
+            const username = createUsername(name);
+
+            const newUser = new User({
+                name,
+                username,
+                email,
+                avatar_url: avatarUrl,
+                password,
+            });
+
+            await newUser.save();
+
+            const token = createToken(newUser._id.toString());
+            const expiryDate = createExpirationDate();
+
+            const { password: __, ...newUserWithoutPassword } = newUser.toObject();
+
+            res.cookie('access_token', token, { httpOnly: true, expires: expiryDate })
+                .status(201)
+                .json({ ...newUserWithoutPassword });
+        }
     } catch (error) {
         next(error);
     }
