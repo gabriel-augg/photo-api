@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Api developed for the PhotoHub project.",
   "main": "./src/server.ts",
-  "type": "module",
   "scripts": {
     "build": "tsc",
     "dev": "ts-node-dev ./src/server.ts",
