@@ -35,6 +35,32 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
 
         return res.status(201).json({ message: 'User created successfully' });
     } catch (error) {
-        return next(errorHandler(500, 'Internal Server Error'));
+        return next(error);
+    }
+};
+
+export const signIn = async (req: Request, res: Response, next: NextFunction) => {
+    const { email, username, password } = req.body;
+
+    if ((!email && !username) || !password) {
+        return next(errorHandler(400, 'Please fill in all fields'));
+    }
+
+    try {
+        const user = await User.findOne({ $or: [{ email }, { username }] });
+
+        if (!user) {
+            return next(errorHandler(400, 'Invalid credentials'));
+        }
+
+        const isMatch = await bcryptjs.compare(password, user.password);
+
+        if (!isMatch) {
+            return next(errorHandler(400, 'Invalid credentials'));
+        }
+
+        return res.status(200).json({ message: 'User logged in successfully' });
+    } catch (error) {
+        next(error);
     }
 };
