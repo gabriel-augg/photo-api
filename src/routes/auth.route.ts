@@ -5,7 +5,7 @@ const router = Router();
 
 router.post("/sign-up", signUp)
 router.post("/sign-in", signIn)
-router.post("/google-sign-in", google)
+router.post("/google", google)
 router.post("/sign-out", signOut)
     
 
