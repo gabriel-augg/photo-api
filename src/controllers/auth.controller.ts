@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { User } from '../models/user.model';
 import { errorHandler } from '../utils/error';
 import bcryptjs from 'bcryptjs';
+import { createExpirationDate, createToken } from '../utils';
 
 export const signUp = async (req: Request, res: Response, next: NextFunction) => {
     const { name, username, avatarUrl, email, password, confirmPassword } = req.body;
@@ -59,7 +60,14 @@ export const signIn = async (req: Request, res: Response, next: NextFunction) =>
             return next(errorHandler(400, 'Invalid credentials'));
         }
 
-        return res.status(200).json({ message: 'User logged in successfully' });
+        const token = createToken(user._id.toString());
+        const expiryDate = createExpirationDate();
+
+        const { password: _, ...userWithoutPassword } = user.toObject();
+
+        res.cookie('access_token', token, { httpOnly: true, expires: expiryDate })
+            .status(200)
+            .json({ ...userWithoutPassword });
     } catch (error) {
         next(error);
     }
