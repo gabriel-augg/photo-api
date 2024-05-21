@@ -119,3 +119,7 @@ export const google = async (req: Request, res: Response, next: NextFunction) =>
         next(error);
     }
 };
+
+export const signOut = async (req: Request, res: Response, next: NextFunction) => {
+    res.clearCookie('access_token').status(200).json({ message: 'User signed out successfully' });
+};
