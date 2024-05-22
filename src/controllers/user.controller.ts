@@ -1,9 +1,28 @@
-import { Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { User } from '../models/user.model';
 import { errorHandler } from '../utils/error';
 import bcryptjs from 'bcryptjs';
 
 import { IRequestWithUser } from '../interfaces/IRequestWithUser';
+
+export const getUser = async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+
+    try {
+        const user = await User.findById(id);
+
+        if (!user) {
+            return next(errorHandler(404, 'User not found'));
+        }
+
+        const { password: _, ...userData } = user.toObject();
+
+        return res.status(200).json(userData);
+
+    } catch (error) {
+        return next(error);
+    }
+}
 
 export const updateUser = async (req: IRequestWithUser, res: Response, next: NextFunction) => {
     const { id } = req.params;
