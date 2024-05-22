@@ -3,13 +3,23 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+const { MONGO_URI, MONGO_URI_TEST, NODE_ENV } = process.env;
+
+const dbUri: string = NODE_ENV === 'test' ? MONGO_URI_TEST! : MONGO_URI!;
+
+
+if (!dbUri) {
+    console.error('Mongo URI is required');
+    process.exit(1);
+}
+
 const db = async () => {
-    const mongoURI: string = process.env.MONGO_URI!;
     try {
-        await mongoose.connect(mongoURI);
-        console.log('Connected to database');
+        await mongoose.connect(dbUri);
+        console.log('Database connected successfully');
     } catch (error) {
-        console.error('Error connecting to database: ', error);
+        console.error('Database connection error:', error);
+        process.exit(1);
     }
 };
 

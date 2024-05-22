@@ -76,7 +76,7 @@ export const signIn = async (req: Request, res: Response, next: NextFunction) =>
 export const google = async (req: Request, res: Response, next: NextFunction) => {
     const { name, email, avatarUrl } = req.body;
 
-    if (!name || !email) {
+    if (!email) {
         return next(errorHandler(422, "it was not possible to login with Google's account"));
     }
 

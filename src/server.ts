@@ -18,7 +18,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 
 app.listen(port, async () => {
-    console.log('Server running on port 3000');
+    console.log(`Server running on port ${port}`);
     await db();
 });
 
@@ -27,3 +27,5 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     const message = err.message || 'Internal Server Error';
     return res.status(statusCode).json({ message });
 })
+
+export { app }
