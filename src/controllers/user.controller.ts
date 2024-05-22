@@ -39,7 +39,7 @@ export const updateUser = async (req: IRequestWithUser, res: Response, next: Nex
 
         let newPassword = existingUser.password;
 
-        if(password) {
+        if (password) {
             if (password !== confirmPassword) {
                 return next(errorHandler(400, 'Passwords do not match'));
             }
@@ -68,6 +68,29 @@ export const updateUser = async (req: IRequestWithUser, res: Response, next: Nex
         const { password: _, ...user } = updateUser.toObject();
 
         return res.status(200).json(user);
+    } catch (error) {
+        return next(error);
+    }
+};
+
+export const deleteUser = async (req: IRequestWithUser, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+    const { loggedUser } = req;
+
+    if (loggedUser?.id !== id) {
+        return next(errorHandler(403, 'You can only delete your own account'));
+    }
+
+    try {
+        const existingUser = await User.findById(id);
+
+        if (!existingUser) {
+            return next(errorHandler(404, 'User not found'));
+        }
+
+        await User.findByIdAndDelete(id);
+
+        return res.clearCookie('access_token').status(200).send({ message: 'User deleted successfully' });
     } catch (error) {
         return next(error);
     }
