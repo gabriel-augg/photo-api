@@ -4,20 +4,21 @@ import { errorHandler } from '../utils/error';
 import bcryptjs from 'bcryptjs';
 
 import { IRequestWithUser } from '../interfaces/IRequestWithUser';
+import { IUser } from '../interfaces/IUser';
 
 export const getUser = async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
 
     try {
-        const user = await User.findById(id);
+        const user: IUser | null = await User.findById(id);
 
         if (!user) {
             return next(errorHandler(404, 'User not found'));
         }
 
-        const { password: _, ...userData } = user.toObject();
+        const { password: _, ...userData } = user.toObject<IUser>();
 
-        return res.status(200).json(userData);
+        return res.status(200).json({...userData});
 
     } catch (error) {
         return next(error);
@@ -38,25 +39,25 @@ export const updateUser = async (req: IRequestWithUser, res: Response, next: Nex
     }
 
     try {
-        const existingUser = await User.findById(id);
+        const existingUser: IUser | null = await User.findById(id);
 
         if (!existingUser) {
             return next(errorHandler(404, 'User not found'));
         }
 
-        const usernameExists = await User.findOne({ username });
+        const usernameExists: IUser | null = await User.findOne({ username });
 
         if (usernameExists && usernameExists.id !== id) {
             return next(errorHandler(400, 'Username already in use'));
         }
 
-        const emailExists = await User.findOne({ email });
+        const emailExists: IUser | null = await User.findOne({ email });
 
         if (emailExists && emailExists.id !== id) {
             return next(errorHandler(400, 'Email already in use'));
         }
 
-        let newPassword = existingUser.password;
+        let newPassword: string = existingUser.password;
 
         if (password) {
             if (password !== confirmPassword) {
@@ -66,7 +67,7 @@ export const updateUser = async (req: IRequestWithUser, res: Response, next: Nex
             newPassword = bcryptjs.hashSync(password, 10);
         }
 
-        const updateUser = await User.findByIdAndUpdate(
+        const updateUser: IUser | null = await User.findByIdAndUpdate(
             id,
             {
                 $set: {
@@ -84,7 +85,7 @@ export const updateUser = async (req: IRequestWithUser, res: Response, next: Nex
             return next(errorHandler(404, 'User not found'));
         }
 
-        const { password: _, ...user } = updateUser.toObject();
+        const { password: _, ...user } = updateUser.toObject<IUser>();
 
         return res.status(200).json(user);
     } catch (error) {
@@ -101,7 +102,7 @@ export const deleteUser = async (req: IRequestWithUser, res: Response, next: Nex
     }
 
     try {
-        const existingUser = await User.findById(id);
+        const existingUser: IUser | null = await User.findById(id);
 
         if (!existingUser) {
             return next(errorHandler(404, 'User not found'));

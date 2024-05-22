@@ -3,6 +3,7 @@ import { User } from '../models/user.model';
 import { errorHandler } from '../utils/error';
 import bcryptjs from 'bcryptjs';
 import { createExpirationDate, createToken, createPassword, createUsername } from '../utils';
+import { IUser } from '../interfaces/IUser';
 
 export const signUp = async (req: Request, res: Response, next: NextFunction) => {
     const { name, username, avatarUrl, email, password, confirmPassword } = req.body;
@@ -12,7 +13,7 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
     }
 
     try {
-        const userExists = await User.findOne({ $or: [{ username }, { email }] });
+        const userExists: IUser | null = await User.findOne({ $or: [{ username }, { email }] });
 
         if (userExists) {
             return next(errorHandler(400, 'Username or email already in use'));
@@ -22,9 +23,9 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
             return next(errorHandler(400, 'Passwords do not match'));
         }
 
-        const hashPassword = await bcryptjs.hash(password, 10);
+        const hashPassword: string = await bcryptjs.hash(password, 10);
 
-        const user = new User({
+        const user: IUser = new User({
             name,
             username,
             avatar_url: avatarUrl,
@@ -48,22 +49,22 @@ export const signIn = async (req: Request, res: Response, next: NextFunction) =>
     }
 
     try {
-        const user = await User.findOne({ $or: [{ email }, { username }] });
+        const user: IUser | null = await User.findOne({ $or: [{ email }, { username }] });
 
         if (!user) {
             return next(errorHandler(400, 'Invalid credentials'));
         }
 
-        const isMatch = await bcryptjs.compare(password, user.password);
+        const isMatch: boolean = await bcryptjs.compare(password, user.password);
 
         if (!isMatch) {
             return next(errorHandler(400, 'Invalid credentials'));
         }
 
-        const token = createToken(user._id.toString());
-        const expiryDate = createExpirationDate();
+        const token: string = createToken(user._id.toString());
+        const expiryDate: Date = createExpirationDate();
 
-        const { password: _, ...userWithoutPassword } = user.toObject();
+        const { password: _, ...userWithoutPassword } = user.toObject<IUser>();
 
         res.cookie('access_token', token, { httpOnly: true, expires: expiryDate })
             .status(200)
@@ -81,22 +82,22 @@ export const google = async (req: Request, res: Response, next: NextFunction) =>
     }
 
     try {
-        const user = await User.findOne({ email });
+        const user: IUser | null = await User.findOne({ email });
 
         if (user) {
-            const token = createToken(user._id.toString());
-            const expiryDate = createExpirationDate();
+            const token: string = createToken(user._id.toString());
+            const expiryDate: Date = createExpirationDate();
 
-            const { password: _, ...userWithoutPassword } = user.toObject();
+            const { password: _, ...userWithoutPassword } = user.toObject<IUser>();
 
             res.cookie('access_token', token, { httpOnly: true, expires: expiryDate })
                 .status(200)
                 .json({ ...userWithoutPassword });
         } else {
-            const password = createPassword();
-            const username = createUsername(name);
+            const password: string = createPassword();
+            const username: string = createUsername(name);
 
-            const newUser = new User({
+            const newUser: IUser = new User({
                 name,
                 username,
                 email,
@@ -106,10 +107,10 @@ export const google = async (req: Request, res: Response, next: NextFunction) =>
 
             await newUser.save();
 
-            const token = createToken(newUser._id.toString());
-            const expiryDate = createExpirationDate();
+            const token: string = createToken(newUser._id.toString());
+            const expiryDate: Date = createExpirationDate();
 
-            const { password: __, ...newUserWithoutPassword } = newUser.toObject();
+            const { password: __, ...newUserWithoutPassword } = newUser.toObject<IUser>();
 
             res.cookie('access_token', token, { httpOnly: true, expires: expiryDate })
                 .status(201)
