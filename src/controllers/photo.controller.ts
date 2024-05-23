@@ -4,10 +4,11 @@ import { errorHandler } from '../utils/error';
 import { User } from '../models/user.model';
 import { Photo } from '../models/photo.model';
 import { IPhoto } from '../interfaces/IPhoto';
+import { IUser } from '../interfaces/IUser';
 
 export const getAllPhotos = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const photos = await Photo.find().populate('user', '_id username avatar_url');
+        const photos: IPhoto[] = await Photo.find().populate('user', '_id username avatar_url');
 
         return res.status(200).json(photos);
     } catch (error) {
@@ -20,7 +21,7 @@ export const getPhoto = async (req: Request, res: Response, next: NextFunction) 
     const { id } = req.params;
 
     try {
-        const photo = await Photo.findById(id).populate('user', '_id username avatar_url');
+        const photo: IPhoto | null = await Photo.findById(id).populate('user', '_id username avatar_url');
 
         if (!photo) {
             return next(errorHandler(404, 'Photo not found'));
@@ -41,14 +42,13 @@ export const createPhoto = async (req: IRequestWithUser, res: Response, next: Ne
     }
 
     try {
-        const userExists = await User.findById(loggedUser.id);
+        const userExists: IUser | null = await User.findById(loggedUser.id);
 
         if (!userExists) {
             return next(errorHandler(404, 'User not found'));
         }
 
         if(userExists._id.toString() !== loggedUser.id) {
-            console.log(userExists._id, loggedUser.id);
             return next(errorHandler(403, 'You can only create photos for your own account'));
         }
 
@@ -73,7 +73,7 @@ export const updatePhoto = async (req: IRequestWithUser, res: Response, next: Ne
     const loggedUser = req.loggedUser!;
 
     try {
-        const photo = await Photo.findById(id);
+        const photo: IPhoto | null = await Photo.findById(id);
 
         if (!photo) {
             return next(errorHandler(404, 'Photo not found'));
@@ -83,7 +83,7 @@ export const updatePhoto = async (req: IRequestWithUser, res: Response, next: Ne
             return next(errorHandler(403, 'You can only update your own photos'));
         }
 
-        const updatedPhoto = await Photo.findByIdAndUpdate(id, { title, description }, { new: true });
+        const updatedPhoto: IPhoto | null = await Photo.findByIdAndUpdate(id, { title, description }, { new: true });
 
         return res.status(200).json(updatedPhoto);
 
@@ -97,7 +97,7 @@ export const deletePhoto = async (req: IRequestWithUser, res: Response, next: Ne
     const loggedUser = req.loggedUser!;
 
     try {
-        const photo = await Photo.findById(id);
+        const photo: IPhoto | null = await Photo.findById(id);
 
         if (!photo) {
             return next(errorHandler(404, 'Photo not found'));

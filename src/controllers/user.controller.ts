@@ -27,10 +27,10 @@ export const getUser = async (req: Request, res: Response, next: NextFunction) =
 
 export const updateUser = async (req: IRequestWithUser, res: Response, next: NextFunction) => {
     const { id } = req.params;
-    const { loggedUser } = req;
     const { name, username, email, avatarUrl, password, confirmPassword } = req.body;
+    const loggedUser = req.loggedUser!;
 
-    if (loggedUser?.id !== id) {
+    if (loggedUser.id !== id) {
         return next(errorHandler(403, 'You can only update your own account'));
     }
 
@@ -95,9 +95,9 @@ export const updateUser = async (req: IRequestWithUser, res: Response, next: Nex
 
 export const deleteUser = async (req: IRequestWithUser, res: Response, next: NextFunction) => {
     const { id } = req.params;
-    const { loggedUser } = req;
+    const loggedUser = req.loggedUser!;
 
-    if (loggedUser?.id !== id) {
+    if (loggedUser.id !== id) {
         return next(errorHandler(403, 'You can only delete your own account'));
     }
 
