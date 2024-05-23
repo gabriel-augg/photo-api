@@ -29,9 +29,7 @@ if (NODE_ENV !== 'test') {
         });
     });
 } else {
-    server = app.listen(0, () => {
-        console.log('Server is running in test mode');
-    });
+    server = app.listen(0);
 }
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
