@@ -18,12 +18,11 @@ export const getUser = async (req: Request, res: Response, next: NextFunction) =
 
         const { password: _, ...userData } = user.toObject<IUser>();
 
-        return res.status(200).json({...userData});
-
+        return res.status(200).json({ ...userData });
     } catch (error) {
         return next(error);
     }
-}
+};
 
 export const updateUser = async (req: IRequestWithUser, res: Response, next: NextFunction) => {
     const { id } = req.params;
@@ -70,14 +69,13 @@ export const updateUser = async (req: IRequestWithUser, res: Response, next: Nex
         const updateUser: IUser | null = await User.findByIdAndUpdate(
             id,
             {
-                $set: {
-                    name,
-                    username,
-                    email,
-                    avatarUrl,
-                    password: newPassword,
-                },
+                name,
+                username,
+                email,
+                avatarUrl,
+                password: newPassword,
             },
+
             { new: true },
         );
 
