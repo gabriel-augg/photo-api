@@ -1,15 +1,7 @@
 import request from 'supertest';
-import { app, server } from '../../server';
-import { connect, closeDatabase, clearDatabase } from '../../utils/dbHandler';
+import { app } from '../../server';
 
-beforeAll(async () => await connect());
-afterEach(async () => await clearDatabase());
-afterAll(async () => {
-    await closeDatabase();
-    server.close();
-});
-
-describe('/POST signup', () => {
+describe('/POST /api/auth/sign-up', () => {
     it('should return 400 when all required fields are not filled', async () => {
         const response = await request(app).post('/api/auth/sign-up').send({
             name: 'Elon Musk',
@@ -73,7 +65,7 @@ describe('/POST signup', () => {
     });
 });
 
-describe('/POST signIn', () => {
+describe('/POST /api/auth/sign-in', () => {
     it('should return 400 when all required fields are not filled', async () => {
         const response = await request(app).post('/api/auth/sign-in').send({
             email: 'elonmusk@email.com',
@@ -125,7 +117,7 @@ describe('/POST signIn', () => {
     });
 });
 
-describe('/POST google', () => {
+describe('/POST /api/auth/google', () => {
     it('should return 422 when all required fields are not filled', async () => {
         const response = await request(app).post('/api/auth/google').send({
             name: 'Elon Musk',
@@ -166,7 +158,7 @@ describe('/POST google', () => {
     });
 });
 
-describe('/POST signOut', () => {
+describe('/POST /api/auth/sign-out', () => {
     it('should return 200 when user signs out', async () => {
         await request(app).post('/api/auth/sign-out').expect(200);
     });
