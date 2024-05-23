@@ -3,9 +3,9 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const { MONGO_URI, MONGO_URI_TEST, NODE_ENV } = process.env;
+const { MONGO_URI, MONGO_URI_DEV, NODE_ENV } = process.env;
 
-const dbUri: string = NODE_ENV === 'test' ? MONGO_URI_TEST! : MONGO_URI!;
+const dbUri: string = NODE_ENV === 'development' ? MONGO_URI_DEV! : MONGO_URI!;
 
 
 if (!dbUri) {

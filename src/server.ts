@@ -10,6 +10,9 @@ dotenv.config();
 
 const { NODE_ENV, PORT } = process.env;
 
+let env: string = NODE_ENV!;
+let server: any;
+
 const port = PORT!;
 const app = express();
 
@@ -19,17 +22,16 @@ app.use(cookieParser());
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 
-let server: any;
 
-if (NODE_ENV !== 'test') {
+if (env === 'test') {
+    server = app.listen(0);
+} else {
     db().then(() => {
-        console.log('Database connected successfully');
+        console.log(`Connected to ${env} database successfully`);
         server = app.listen(port, () => {
             console.log(`Server running on port ${port}`);
         });
     });
-} else {
-    server = app.listen(0);
 }
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
