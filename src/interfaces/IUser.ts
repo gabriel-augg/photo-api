@@ -1,4 +1,4 @@
-import { Document } from "mongoose";
+import { Document, Types } from "mongoose";
 
 export interface IUser extends Document {
     _id: string;
@@ -7,4 +7,5 @@ export interface IUser extends Document {
     avatar_url?: string;
     email: string;
     password: string;
+    photos: Types.ObjectId[];
 }

@@ -22,6 +22,12 @@ const userSchema = new Schema<IUser>({
         type: String,
         required: true,
     },
+    photos: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Photo',
+        },
+    ],
 });
 
 export const User = model<IUser>('User', userSchema);

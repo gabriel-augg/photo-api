@@ -10,7 +10,7 @@ export const getUser = async (req: Request, res: Response, next: NextFunction) =
     const { id } = req.params;
 
     try {
-        const user: IUser | null = await User.findById(id);
+        const user: IUser | null = await User.findById(id).populate('photos');
 
         if (!user) {
             return next(errorHandler(404, 'User not found'));
@@ -18,7 +18,7 @@ export const getUser = async (req: Request, res: Response, next: NextFunction) =
 
         const { password: _, ...userData } = user.toObject<IUser>();
 
-        return res.status(200).json({ ...userData });
+        return res.status(200).json(userData);
     } catch (error) {
         return next(error);
     }

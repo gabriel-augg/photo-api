@@ -5,6 +5,7 @@ import { User } from '../models/user.model';
 import { Photo } from '../models/photo.model';
 import { IPhoto } from '../interfaces/IPhoto';
 import { IUser } from '../interfaces/IUser';
+import mongoose from 'mongoose';
 
 export const getAllPhotos = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -15,6 +16,24 @@ export const getAllPhotos = async (req: Request, res: Response, next: NextFuncti
         return next(error);
     }
 
+}
+
+export const getUserPhotosById = async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+
+    try {
+        const user: IUser | null = await User.findById(id);
+
+        if (!user) {
+            return next(errorHandler(404, 'User not found'));
+        }
+
+        const photos: IPhoto[] = await Photo.find({ user: id }).populate('user', '_id username avatar_url');
+
+        return res.status(200).json(photos);
+    } catch (error) {
+        return next(error);
+    }
 }
 
 export const getPhoto = async (req: Request, res: Response, next: NextFunction) => {
@@ -41,6 +60,7 @@ export const createPhoto = async (req: IRequestWithUser, res: Response, next: Ne
         return next(errorHandler(400, 'Image_url is required'));
     }
 
+
     try {
         const userExists: IUser | null = await User.findById(loggedUser.id);
 
@@ -60,6 +80,8 @@ export const createPhoto = async (req: IRequestWithUser, res: Response, next: Ne
         });
 
         await newPhoto.save();
+
+        await User.findByIdAndUpdate(userExists._id, { $push: { photos: newPhoto._id } });
 
         return res.status(201).json(newPhoto);
     } catch (error) {
@@ -96,6 +118,7 @@ export const deletePhoto = async (req: IRequestWithUser, res: Response, next: Ne
     const { id } = req.params;
     const loggedUser = req.loggedUser!;
 
+
     try {
         const photo: IPhoto | null = await Photo.findById(id);
 
@@ -108,6 +131,7 @@ export const deletePhoto = async (req: IRequestWithUser, res: Response, next: Ne
         }
 
         await Photo.findByIdAndDelete(id);
+        await User.findByIdAndUpdate(photo.user, { $pull: { photos: id } });
 
         return res.status(204).json();
 
