@@ -5,7 +5,7 @@ export interface IPhoto extends Document {
     title?: string;
     description?: string;
     image_url: string;
-    user_id: Types.ObjectId;
+    user: Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
 }
