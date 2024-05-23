@@ -47,7 +47,8 @@ export const createPhoto = async (req: IRequestWithUser, res: Response, next: Ne
             return next(errorHandler(404, 'User not found'));
         }
 
-        if(userExists._id !== loggedUser.id) {
+        if(userExists._id.toString() !== loggedUser.id) {
+            console.log(userExists._id, loggedUser.id);
             return next(errorHandler(403, 'You can only create photos for your own account'));
         }
 
@@ -65,6 +66,31 @@ export const createPhoto = async (req: IRequestWithUser, res: Response, next: Ne
         return next(error);
     }
 };
+
+export const updatePhoto = async (req: IRequestWithUser, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+    const { title, description } = req.body;
+    const loggedUser = req.loggedUser!;
+
+    try {
+        const photo = await Photo.findById(id);
+
+        if (!photo) {
+            return next(errorHandler(404, 'Photo not found'));
+        }
+
+        if (photo.user.toString() !== loggedUser.id) {
+            return next(errorHandler(403, 'You can only update your own photos'));
+        }
+
+        const updatedPhoto = await Photo.findByIdAndUpdate(id, { title, description }, { new: true });
+
+        return res.status(200).json(updatedPhoto);
+
+    } catch (error) {
+        return next(error);
+    }
+}
 
 export const deletePhoto = async (req: IRequestWithUser, res: Response, next: NextFunction) => {
     const { id } = req.params;
