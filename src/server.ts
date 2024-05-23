@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 
 import authRoutes from './routes/auth.route';
 import userRoutes from './routes/user.route';
+import photoRoutes from './routes/photo.route';
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ app.use(cookieParser());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/photos', photoRoutes);
 
 
 if (env === 'test') {
