@@ -9,7 +9,7 @@ const photoSchema = new Schema<IPhoto>(
             type: String,
             required: true,
         },
-        user_id: {
+        user: {
             type: Schema.Types.ObjectId,
             ref: 'User',
             required: true,
