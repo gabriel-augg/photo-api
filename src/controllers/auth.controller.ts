@@ -68,7 +68,7 @@ export const signIn = async (req: Request, res: Response, next: NextFunction) =>
 
         res.cookie('access_token', token, { httpOnly: true, expires: expiryDate })
             .status(200)
-            .json({ ...userWithoutPassword });
+            .json(userWithoutPassword);
     } catch (error) {
         next(error);
     }
@@ -114,7 +114,7 @@ export const google = async (req: Request, res: Response, next: NextFunction) =>
 
             res.cookie('access_token', token, { httpOnly: true, expires: expiryDate })
                 .status(201)
-                .json({ ...newUserWithoutPassword });
+                .json(newUserWithoutPassword);
         }
     } catch (error) {
         next(error);
