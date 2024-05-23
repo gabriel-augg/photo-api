@@ -89,6 +89,78 @@ describe('/POST /api/photos/create', () => {
     });
 });
 
+describe('/PUT /api/photos/:id', () => {
+    const nonExistentPhotoId = new mongoose.Types.ObjectId();
+    it('should return 401 if no token is provided', async () => {
+        const response = await request(app).put(`/api/photos/${nonExistentPhotoId}`);
+
+        expect(response.status).toBe(401);
+        expect(response.body.message).toBe('You are not authenticated');
+    });
+
+    it('should return 404 if photo is not found', async () => {
+        const response = await request(app)
+            .put(`/api/photos/${nonExistentPhotoId}`)
+            .set('Cookie', [`access_token=${token}`]);
+
+        expect(response.status).toBe(404);
+        expect(response.body.message).toBe('Photo not found');
+    });
+
+    it('should return 403 if user is not the owner of the photo', async () => {
+        await request(app).post('/api/auth/sign-up').send({
+            name: 'Steve Jobs',
+            username: 'stevejobs',
+            email: 'stevejobs@email.com',
+            password: 'password',
+            confirmPassword: 'password',
+        });
+
+        const response = await request(app).post('/api/auth/sign-in').send({
+            username: 'stevejobs',
+            password: 'password',
+        });
+
+        const cookie = response.header['set-cookie'];
+        const token2 = cookie[0].split('access_token=')[1].split(';')[0];
+
+        const photoResponse = await request(app)
+            .post('/api/photos/create')
+            .set('Cookie', [`access_token=${token2}`])
+            .send({
+                image_url: 'https://www.example.com/image.jpg',
+            });
+
+        const response2 = await request(app)
+            .put(`/api/photos/${photoResponse.body._id}`)
+            .set('Cookie', [`access_token=${token}`])
+            .send({ title: 'New title' });
+
+        expect(response2.status).toBe(403);
+        expect(response2.body.message).toBe('You can only update your own photos');
+    });
+
+    it('should return 200 if photo is found and user is the owner', async () => {
+        const photoResponse = await request(app)
+            .post('/api/photos/create')
+            .set('Cookie', [`access_token=${token}`])
+            .send({
+                image_url: 'https://www.example.com/image.jpg',
+                title:"old photo"
+            });
+
+        const response = await request(app)
+            .put(`/api/photos/${photoResponse.body._id}`)
+            .set('Cookie', [`access_token=${token}`])
+            .send({ title: 'New title' });
+
+        expect(response.status).toBe(200);
+        expect(response.body.title).toBe('New title');
+    });
+
+
+});
+
 describe('DELETE /api/photos/:id', () => {
     const nonExistentPhotoId = new mongoose.Types.ObjectId();
     it('should return 401 if no token is provided', async () => {
@@ -134,7 +206,6 @@ describe('DELETE /api/photos/:id', () => {
         const response2 = await request(app)
             .delete(`/api/photos/${photoResponse.body._id}`)
             .set('Cookie', [`access_token=${token}`])
-            .send({ title: 'New title' });
 
         expect(response2.status).toBe(403);
         expect(response2.body.message).toBe('You can only delete your own photos');
